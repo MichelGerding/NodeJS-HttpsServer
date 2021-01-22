@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 // custom classes
 
+middleware = new Map();
 const Route = require("./route.js");
 
 class HttpsServer {
@@ -182,9 +183,8 @@ class HttpsServer {
   }
 
   /********************* MIDDELWARE FUNCTIONS *********************/
-  #middleware = new Map();
   addMiddleware(name, middleware) {
-    this.#middleware.set(name, middleware);
+    middleware.set(name, middleware);
   }
   loadMiddleware(middlewareFolder) {
     const normPath = path.join(this.processRoot, middlewareFolder)
