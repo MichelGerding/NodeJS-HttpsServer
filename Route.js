@@ -8,8 +8,6 @@ class Route {
   // the function that gets called when the routes is visited
   async call(req, res) {
     if (this.#middleware != null && this.#middleware != undefined && this.#middleware.length !== 0) {
-        console.log("has middleware")
-        console.log(this.#middleware)
       let reqEditted = req;
       let resEdditted = res;
 

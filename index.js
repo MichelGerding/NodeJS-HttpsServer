@@ -186,9 +186,15 @@ class HttpsServer {
   addMiddleware(name, middleware) {
     this.#middleware.set(name, middleware);
   }
-  //TODO: create a  function to autoload the middelware located in the /middelware folder
   loadMiddleware(middlewareFolder) {
-    console.log(path.join(this.processRoot, middlewareFolder))
+    const normPath = path.join(this.processRoot, middlewareFolder)
+
+    fs.readdirSync(normPath).forEach((file) => {
+      const filename = file.split('.')[0];
+      const handler = require(path.join(normPath, file))
+
+      this.#middleware.set(filename, handler)
+    })
   }
   
   /********************* TEMPLATE RENDER FUNCTIONS *********************/
