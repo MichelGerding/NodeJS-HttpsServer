@@ -1,13 +1,14 @@
 class Route {
   #middleware = [];
-  constructor(middleware) {
-    this.middlewareMap = middleware;
-  }
   // define a empty callback so we dont get any errors
   callback = function (req, res) {};
   // the function that gets called when the routes is visited
   async call(req, res) {
-    if (this.#middleware != null && this.#middleware != undefined && this.#middleware.length !== 0) {
+    if (
+      this.#middleware != null &&
+      this.#middleware != undefined &&
+      this.#middleware.length !== 0
+    ) {
       let reqEditted = req;
       let resEdditted = res;
 
@@ -34,11 +35,13 @@ class Route {
             called = true;
             this.callback(req, res);
           };
-          await this.middlewareMap.get(name)(reqEditted, resEdditted, next);
-        } else {
-          await this.middlewareMap.get(name)(reqEditted, resEdditted, next);
         }
 
+        if (global.middleware.has(name)) {
+          await global.middleware.get(name)(reqEditted, resEdditted, next);
+        } else {
+          console.error(`middleware: "${name}" not defined`);
+        }
         // we check if the next function is called in the middelware
         // if next is not called we send errorcode 403 to signify an error
         if (!called) {

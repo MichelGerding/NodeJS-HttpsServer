@@ -2,9 +2,10 @@ const https = require("https");
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
-// custom classes
 
+// custom classes
 const Route = require("./route.js");
+const Router = require('./router.js')
 
 class HttpsServer {
   processRoot = process.cwd()
@@ -36,6 +37,8 @@ class HttpsServer {
     this.debug = this.#undefined(debug) ? false : true;
     this.hostname = this.#undefined(hostname) ? "localhost" : hostname;
     this.port = this.#undefined(port) ? "8080" : port;
+
+    global.middleware = new Map();
 
     if (this.#undefined(key) || this.#undefined(cert)) {
       this.server = http.createServer((req, res) => {
@@ -131,12 +134,13 @@ class HttpsServer {
     }
 
     // check if the methode has been inplemented
-    if (!(method in this.routes)) {
+    if (this.#router.hasMethod(method)) {
       res.statusCode = 405;
       res.end();
       return console.error(`methode: ${method} not implemented`);
     }
-    const handeler = this.routes[method].get(url);
+
+    const handeler = this.#router.getRouteHandeler(method, url);
     // check if the route exist and if it does not send a 404
     if (typeof handeler === "undefined") {
       this.#log("route not found");
@@ -161,30 +165,23 @@ class HttpsServer {
   /********************* ROUTE FUNTIONS *********************/
   // the callback should take the varaibles req, res and the callback to the route which can be called
   // when the route has to be handeled. this function needs to get the req and res.
+  #router = new Router();
   get(path, callback) {
-    return this.addRoute("GET", path, callback);
+    return this.#router.addRoute("GET", path, callback);
   }
   post(path, callback) {
-    return this.addRoute("POST", path, callback);
+    return this.#router.addRoute("POST", path, callback);
   }
+  //TODO: move the routing functions to the router class
 
-  addRoute(method, path, callback) {
-    method = method.toUpperCase();
-    if (method in this.routes) {
-      this.routes[method] = new Map();
-    }
-
-    let route = new Route(this.#middleware);
-    route.callback = callback;
-    this.routes[method].set(path, route);
-
-    return route;
+  get routes() {
+    return this.router.routes;
   }
 
   /********************* MIDDELWARE FUNCTIONS *********************/
-  #middleware = new Map();
+  //TODO: move the middleware functions to the router class
   addMiddleware(name, middleware) {
-    this.#middleware.set(name, middleware);
+    global.middleware.set(name, middleware);
   }
   loadMiddleware(middlewareFolder) {
     const normPath = path.join(this.processRoot, middlewareFolder)
@@ -193,8 +190,9 @@ class HttpsServer {
       const filename = file.split('.')[0];
       const handler = require(path.join(normPath, file))
 
-      this.#middleware.set(filename, handler)
+      global.middleware.set(filename, handler)
     })
+    
   }
   
   /********************* TEMPLATE RENDER FUNCTIONS *********************/
