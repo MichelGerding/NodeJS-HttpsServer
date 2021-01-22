@@ -2,9 +2,13 @@ const https = require("https");
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+// custom classes
+
+const Route = require("./route.js");
 
 class HttpsServer {
-  public_folder = "../public";
+  processRoot = process.cwd()
+  public_folder = path.join(this.processRoot, 'public');
   routes = { GET: new Map(), POST: new Map() };
   mime_types = {
     html: "text/html",
@@ -182,7 +186,11 @@ class HttpsServer {
   addMiddleware(name, middleware) {
     this.#middleware.set(name, middleware);
   }
-
+  //TODO: create a  function to autoload the middelware located in the /middelware folder
+  loadMiddleware(middlewareFolder) {
+    console.log(path.join(this.processRoot, middlewareFolder))
+  }
+  
   /********************* TEMPLATE RENDER FUNCTIONS *********************/
   // the user may implement his own render functions or renderer
   render(fileName, vals) {
@@ -209,80 +217,5 @@ class HttpsServer {
   };
 }
 /********************* THIS IS THE END OF THE HTTPSERVER CLASS *********************/
-/* the class that is returned when a route is added */
-class Route {
-  #middleware = [];
-  constructor(middleware) {
-    this.middlewareMap = middleware;
-  }
-  // define a empty callback so we dont get any errors
-  callback = function (req, res) {};
-  // the function that gets called when the routes is visited
-  async call(req, res) {
-    if (this.#middleware != null || this.#middleware != undefined) {
-      let reqEditted = req;
-      let resEdditted = res;
-
-      // we loop throug all the middelware added to the route
-      for (let i = 0; i < this.#middleware.length; i++) {
-        const name = this.#middleware[i];
-
-        // we make a variable next which we will set to true in the next function to 
-        // detect if the next function is called in the middelware. 
-        // that is done so we know if the user wants to continue.
-        // the next function also changes the local req and res so the user can eddit them
-        let called = false;
-        let next = (req, res) => {called = true; resEdditted = res, reqEditted = req}
-
-        // check if it is the last index of the loop
-        // if it is we change the next function
-        if (i === this.#middleware.length - 1) {
-          // we change the next function to no longer set the req and res 
-          // variables but call the this.callback function
-          next = (req,res) => {called = true; this.callback(req,res);}
-          await this.middlewareMap.get(name)(reqEditted, resEdditted, next)
-        } else {
-          await this.middlewareMap.get(name)(reqEditted, resEdditted, next);
-        }
-
-        // we check if the next function is called in the middelware 
-        // if next is not called we send errorcode 403 to signify an error
-        if(!called) {
-          res.statusCode = 403;
-          res.end()
-        }
-      }
-    } else {
-      await callback(req, res);
-    }
-
-
-    // if the request isnt ended in the handeler we set 
-    // the httpcode to 403 and end the request 
-    if (!res.writeableEnded) {
-      res.statusCode = 403;
-      res.end();
-    }
-  }
-
-  // when we set the middleware we need want to append the 
-  // name of the middelware instead of replacing it
-  //TODO: change to a function so we can chain multiple functions to edit the route.
-  //TODO: change the setter so we can just set it normaly. Vut we need to keep it as an array 
-  set middleware(name) {
-    const pushMiddleware = (middlewareName) => {
-      if (!this.#middleware.includes(middlewareName)) {
-        this.#middleware.push(middlewareName);
-      }
-    };
-    if (typeof name === "string") {
-      pushMiddleware(name);
-    } else if (Array.isArray(name)) {
-      name.forEach((item) => {
-        pushMiddleware(item);
-      });
-    }
-  }
-}
 
 module.exports = {HttpsServer, Route};
