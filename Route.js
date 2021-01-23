@@ -3,11 +3,11 @@ class Route {
   // define a empty callback so we dont get any errors
   callback = function (req, res) {};
 
-  #middlewareMap
+  #middlewareMap;
   constructor(middlemap) {
     this.#middlewareMap = middlemap;
   }
-  
+
   // the function that gets called when the routes is visited
   async call(req, res) {
     if (

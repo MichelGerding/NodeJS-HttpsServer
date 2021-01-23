@@ -27,12 +27,11 @@ class Router {
   }
 
   get routes() {
-    let returnval = {}
-    this.methods.forEach(methode => {
+    let returnval = {};
+    this.methods.forEach((methode) => {
       const keys = Array.from(this.#routes[methode].keys());
       returnval[methode] = keys;
-      
-    })
+    });
     return returnval;
   }
   /********************* METHOD FUNCTIONS *********************/
@@ -55,22 +54,22 @@ class Router {
   /********************* MIDDELWARE FUNCTIONS *********************/
   addMiddleware(name, middleware, override) {
     override = override ?? true;
-    
+
     if (!override && global.middleware.has(name)) {
-      throw new Error(`middleware with name: "${name}" already exists`)
+      throw new Error(`middleware with name: "${name}" already exists`);
     }
     this.#middleware.set(name, middleware);
   }
 
   loadMiddleware(middlewareFolder) {
-    const normPath = path.join(process.cwd(), middlewareFolder)
+    const normPath = path.join(process.cwd(), middlewareFolder);
 
     fs.readdirSync(normPath).forEach((file) => {
-      const filename = file.split('.')[0];
-      const handler = require(path.join(normPath, file))
+      const filename = file.split(".")[0];
+      const handler = require(path.join(normPath, file));
 
-      this.addMiddleware(filename, handler, false)
-    })
+      this.addMiddleware(filename, handler, false);
+    });
   }
 }
 

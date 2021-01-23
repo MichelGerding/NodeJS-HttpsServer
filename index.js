@@ -4,11 +4,12 @@ const fs = require("fs");
 const path = require("path");
 
 // custom classes
-const Router = require('./router.js')
+const Router = require("./router.js");
+const View = require("./view.js");
 
 class HttpsServer {
-  processRoot = process.cwd()
-  public_folder = path.join(this.processRoot, 'public');
+  processRoot = process.cwd();
+  public_folder = path.join(this.processRoot, "public");
   mime_types = {
     html: "text/html",
     txt: "text/plain",
@@ -30,9 +31,9 @@ class HttpsServer {
 
   constructor(options) {
     const { port, hostname, ssl, debug } = { ...options };
-    const { key, cert } = {key: undefined, cert: undefined, ...ssl};
+    const { key, cert } = { key: undefined, cert: undefined, ...ssl };
 
-    this.debug = debug ?? false ;
+    this.debug = debug ?? false;
     this.hostname = hostname ?? "localhost";
     this.port = port ?? "8080";
 
@@ -172,18 +173,18 @@ class HttpsServer {
   }
 
   get routes() {
-    console.log("oetlul")
+    console.log("oetlul");
     return this.#router.routes;
   }
 
   /********************* MIDDELWARE FUNCTIONS *********************/
   addMiddleware(name, middleware, override) {
-    this.#router.addMiddleware(name, middleware, override)
+    this.#router.addMiddleware(name, middleware, override);
   }
   loadMiddleware(middlewareFolder) {
-    this.#router.loadMiddleware(middlewareFolder)
+    this.#router.loadMiddleware(middlewareFolder);
   }
-  
+
   /********************* TEMPLATE RENDER FUNCTIONS *********************/
   // the user may implement his own render functions or renderer
   static render(fileName, vals) {
@@ -196,8 +197,8 @@ class HttpsServer {
   static renderEngine = function (templateStr, params) {
     //TODO: change the scope of the object so we dont have to do params.varname in the template
     // make sure the params object is an obj
-    params = ((!!params) && (params.constructor === Object)) ? params : {};
-    
+    params = !!params && params.constructor === Object ? params : {};
+
     // use eval to check the string
     let str = "";
     try {
@@ -210,28 +211,33 @@ class HttpsServer {
   };
 
   /********************* VIEW FUNCTIONS *********************/
-  static viewPath = "./views"
+  static viewPath = "./views";
 }
+
 class _View {
   static render(name, vals) {
-    const route = path.join(process.cwd(), HttpsServer.viewPath, ...name.split('.')) + ".html"
+    const route =
+      path.join(process.cwd(), HttpsServer.viewPath, ...name.split(".")) +
+      ".html";
 
-    if(!fs.existsSync(route)) {
-      throw new Error(`view "${name}" does not exist. path to views: "${this.viewPath}"`)
+    if (!fs.existsSync(route)) {
+      throw new Error(
+        `view "${name}" does not exist. path to views: "${this.viewPath}"`
+      );
     }
-    
+
     // we render the view using the rendering engine so you can also use the
     // template string syntax in the template, and as you may overwrite the render
     // function you can use the syntax of any rendering engine
     const fileContent = fs.readFileSync(route);
-    return HttpsServer.renderEngine(fileContent, vals)
+    return HttpsServer.renderEngine(fileContent, vals);
   }
 }
 
 const View = new Proxy(_View, {
   apply(target, thisArg, argumentsList) {
-    return target.render(...argumentsList)
-  }
-})
+    return target.render(...argumentsList);
+  },
+});
 
-module.exports = {HttpsServer, View};
+module.exports = { HttpsServer, View };
