@@ -2,6 +2,12 @@ class Route {
   #middleware = [];
   // define a empty callback so we dont get any errors
   callback = function (req, res) {};
+
+  #middlewareMap
+  constructor(middlemap) {
+    this.#middlewareMap = middlemap;
+  }
+  
   // the function that gets called when the routes is visited
   async call(req, res) {
     if (
@@ -37,8 +43,8 @@ class Route {
           };
         }
 
-        if (global.middleware.has(name)) {
-          await global.middleware.get(name)(reqEditted, resEdditted, next);
+        if (this.#middlewareMap.has(name)) {
+          await this.#middlewareMap.get(name)(reqEditted, resEdditted, next);
         } else {
           console.error(`middleware: "${name}" not defined`);
         }

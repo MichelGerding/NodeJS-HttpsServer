@@ -4,13 +4,11 @@ const fs = require("fs");
 const path = require("path");
 
 // custom classes
-const Route = require("./route.js");
 const Router = require('./router.js')
 
 class HttpsServer {
   processRoot = process.cwd()
   public_folder = path.join(this.processRoot, 'public');
-  routes = { GET: new Map(), POST: new Map() };
   mime_types = {
     html: "text/html",
     txt: "text/plain",
@@ -31,12 +29,12 @@ class HttpsServer {
     typeof variable === "undefined" || typeof variable === "null";
 
   constructor(options) {
-    const { port, hostname, ssl, debug } = { ssl: {}, ...options };
-    const { key, cert } = ssl;
+    const { port, hostname, ssl, debug } = { ...options };
+    const { key, cert } = {key: undefined, cert: undefined, ...ssl};
 
-    this.debug = this.#undefined(debug) ? false : true;
-    this.hostname = this.#undefined(hostname) ? "localhost" : hostname;
-    this.port = this.#undefined(port) ? "8080" : port;
+    this.debug = debug ?? false ;
+    this.hostname = hostname ?? "localhost";
+    this.port = port ?? "8080";
 
     global.middleware = new Map();
 
@@ -172,27 +170,18 @@ class HttpsServer {
   post(path, callback) {
     return this.#router.addRoute("POST", path, callback);
   }
-  //TODO: move the routing functions to the router class
 
   get routes() {
-    return this.router.routes;
+    console.log("oetlul")
+    return this.#router.routes;
   }
 
   /********************* MIDDELWARE FUNCTIONS *********************/
-  //TODO: move the middleware functions to the router class
-  addMiddleware(name, middleware) {
-    global.middleware.set(name, middleware);
+  addMiddleware(name, middleware, override) {
+    this.#router.addMiddleware(name, middleware, override)
   }
   loadMiddleware(middlewareFolder) {
-    const normPath = path.join(this.processRoot, middlewareFolder)
-
-    fs.readdirSync(normPath).forEach((file) => {
-      const filename = file.split('.')[0];
-      const handler = require(path.join(normPath, file))
-
-      global.middleware.set(filename, handler)
-    })
-    
+    this.#router.loadMiddleware(middlewareFolder)
   }
   
   /********************* TEMPLATE RENDER FUNCTIONS *********************/
@@ -220,6 +209,5 @@ class HttpsServer {
     }
   };
 }
-/********************* THIS IS THE END OF THE HTTPSERVER CLASS *********************/
 
-module.exports = {HttpsServer, Route};
+module.exports = {HttpsServer};
