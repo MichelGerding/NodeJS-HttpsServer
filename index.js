@@ -132,7 +132,7 @@ class HttpsServer {
     }
 
     // check if the methode has been inplemented
-    if (this.#router.hasMethod(method)) {
+    if (!this.#router.hasMethod(method)) {
       res.statusCode = 405;
       res.end();
       return console.error(`methode: ${method} not implemented`);
@@ -140,7 +140,7 @@ class HttpsServer {
 
     const handeler = this.#router.getRouteHandeler(method, url);
     // check if the route exist and if it does not send a 404
-    if (typeof handeler === "undefined") {
+    if (this.#undefined(handeler)) {
       this.#log("route not found");
       res.statusCode = 404;
       return res.end();
@@ -186,17 +186,17 @@ class HttpsServer {
   
   /********************* TEMPLATE RENDER FUNCTIONS *********************/
   // the user may implement his own render functions or renderer
-  render(fileName, vals) {
+  static render(fileName, vals) {
     return this.renderEngine(
-      fs.readFileSync(path.join(this.public_folder, fileName)).toString(),
+      fs.readFileSync(path.join(process.cwd(), fileName)).toString(),
       vals
     );
   }
 
-  renderEngine = function (templateStr, params) {
+  static renderEngine = function (templateStr, params) {
     //TODO: change the scope of the object so we dont have to do params.varname in the template
-    // make sure the params object is defined to a obj
-    params = { ...params };
+    // make sure the params object is an obj
+    params = ((!!params) && (params.constructor === Object)) ? params : {};
     
     // use eval to check the string
     let str = "";
@@ -208,6 +208,30 @@ class HttpsServer {
       return str;
     }
   };
+
+  /********************* VIEW FUNCTIONS *********************/
+  static viewPath = "./views"
+}
+class _View {
+  static render(name, vals) {
+    const route = path.join(process.cwd(), HttpsServer.viewPath, ...name.split('.')) + ".html"
+
+    if(!fs.existsSync(route)) {
+      throw new Error(`view "${name}" does not exist. path to views: "${this.viewPath}"`)
+    }
+    
+    // we render the view using the rendering engine so you can also use the
+    // template string syntax in the template, and as you may overwrite the render
+    // function you can use the syntax of any rendering engine
+    const fileContent = fs.readFileSync(route);
+    return HttpsServer.renderEngine(fileContent, vals)
+  }
 }
 
-module.exports = {HttpsServer};
+const View = new Proxy(_View, {
+  apply(target, thisArg, argumentsList) {
+    return target.render(...argumentsList)
+  }
+})
+
+module.exports = {HttpsServer, View};
