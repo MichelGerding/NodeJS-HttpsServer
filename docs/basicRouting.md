@@ -54,4 +54,10 @@ app.delete('/user', function (req, res) {
 })
 ```
 
+if you want to use a http method that doesnt have a configurated function you can use the `app.addRoute()` function:
+
+```js
+app.addRoute(METHOD, PATH, HANDELER)
+```
+
 [Previous: Hello Internet](./helloWorld.md)&#8195;&#8195;&#8195;&#8195;&#8195;
