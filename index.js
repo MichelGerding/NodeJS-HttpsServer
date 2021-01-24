@@ -4,8 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 // custom classes
-const Router = require("./router.js");
-const View = require("./view.js");
+const Router = require("httpserver/router");
 
 class HttpsServer {
   processRoot = process.cwd();
@@ -213,7 +212,6 @@ class HttpsServer {
   /********************* VIEW FUNCTIONS *********************/
   static viewPath = "./views";
 }
-
 class _View {
   static render(name, vals) {
     const route =
