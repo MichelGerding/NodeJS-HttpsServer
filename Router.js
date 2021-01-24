@@ -1,4 +1,4 @@
-const Route = require("./route.js");
+const Route = require("httpserver/route");
 const path = require("path");
 const fs = require("fs");
 

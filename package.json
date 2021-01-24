@@ -5,7 +5,8 @@
   "main": "index.js",
   "exports": {
     ".": "./index.js",
-    "./route": "./Route.js"
+    "./route": "./Route.js",
+    "./router": "./Router.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
