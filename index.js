@@ -145,6 +145,12 @@ class HttpsServer {
       res.statusCode = 404;
       return res.end();
     }
+    // add the send function to the response
+
+    res.send = (str) => {
+      res.write(str);
+      res.end();
+    };
 
     req.on("error", (err) => {
       console.error(err);
