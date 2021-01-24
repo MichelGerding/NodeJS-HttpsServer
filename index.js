@@ -169,6 +169,14 @@ class HttpsServer {
   /********************* ROUTE FUNTIONS *********************/
   // the callback should take the varaibles req, res and the callback to the route which can be called
   // when the route has to be handeled. this function needs to get the req and res.
+  //TODO:{feature} allow the use of multiple routers
+  //TODO:{feature} add a function to bind middleware tot the router
+
+  //TODO:{feature} Add a feature so we can use variables in the route
+  //TODO:{feature Adda a feature so we can use regex as the route
+
+  //TODO:{syntax sugar} add a method to add multiple httpMethods to a single route
+
   #router = new Router();
   get(path, callback) {
     return this.#router.addRoute("GET", path, callback);
@@ -176,9 +184,17 @@ class HttpsServer {
   post(path, callback) {
     return this.#router.addRoute("POST", path, callback);
   }
+  put(path, callback) {
+    return this.#router.addRoute("PUT", path, callback);
+  }
+  delete(path, callback) {
+    return this.#router.addRoute("DELETE", path, callback);
+  }
 
+  addRoute(method, path, callback) {
+    return this.#router.addRoute(method, path, callback);
+  }
   get routes() {
-    console.log("oetlul");
     return this.#router.routes;
   }
 

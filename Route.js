@@ -26,6 +26,7 @@ class Route {
         // detect if the next function is called in the middelware.
         // that is done so we know if the user wants to continue.
         // the next function also changes the local req and res so the user can eddit them
+        //TODO: rewrite so we always close the connection with a 200, except when we have a error then return a 500
         let called = false;
         let next = (req, res) => {
           called = true;
